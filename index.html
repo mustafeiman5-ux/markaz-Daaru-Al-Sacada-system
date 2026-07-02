@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مركز دار السعادة - School Management System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Firebase Compat SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
+    
+    <!-- SheetJS for Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Offline Indicator -->
+    <div id="offlineIndicator" class="offline-indicator" style="display: none;">
+        ⚠️ You are offline - Data saved locally
+    </div>
+
+    <!-- Login Section -->
+    <div id="loginSection" class="login-container">
+        <div class="login-left">
+            <div class="login-brand">
+              <img src="logo.png" alt="Markaz Logo" class="logo-image">
+                <h1>مركز دار السعادة</h1>
+                <p>MARKAZ DAARU SACAADA</p>
+                <div class="features-list">
+                    <div class="feature">
+                        <span>🎓</span>
+                        <div>
+                            <strong>Student Management</strong>
+                            <br><small>Registration & Tracking</small>
+                        </div>
+                    </div>
+                    <div class="feature">
+                        <span>✅</span>
+                        <div>
+                            <strong>Smart Attendance</strong>
+                            <br><small>4 Shifts & Auto-Lock</small>
+                        </div>
+                    </div>
+                    <div class="feature">
+                        <span>💰</span>
+                        <div>
+                            <strong>Finance & Expenses</strong>
+                            <br><small>Complete Accounting</small>
+                        </div>
+                    </div>
+                    <div class="feature">
+                        <span>📊</span>
+                        <div>
+                            <strong>Reports & Archives</strong>
+                            <br><small>Monthly Analytics</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="login-right">
+            <div class="login-box">
+                <div class="login-header">
+                      <img src="logo.png" alt="Markaz Logo" class="logo-image">
+                    <h2 class="school-name-arabic">مركز دار السعادة</h2>
+                    <p class="school-name-english">MARKAZ DAARU SACAADA</p>
+                    <p class="school-subtitle">School Management System</p>
+                </div>
+                
+                <div id="welcomeMessage" class="welcome-message" style="display: none;">
+                    <h2>Welcome! 👋</h2>
+                    <p>Logging you in...</p>
+                </div>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" required placeholder="Enter username">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" required placeholder="Enter password">
+                    </div>
+                    <div class="form-group">
+                        <label for="loginRole">Role</label>
+                        <select id="loginRole" required>
+                            <option value="">-- Select Role --</option>
+                            <option value="manager">Administrator</option>
+                            <option value="finance">المحاسب</option>
+                            <option value="teacher_class_omar">معلم - فصل عمر</option>
+                            <option value="teacher_class_abubakar">معلم - فصل ابوبكر</option>
+                            <option value="teacher_class_khadija">معلم - فصل خديجة</option>
+                            <option value="teacher_class_hijaa1">معلم - فصل الهجاء الأول</option>
+                            <option value="teacher_class_hijaa2">معلم - فصل الهجاء الثاني</option>
+                            <option value="teacher_class_tasis">معلم - فصل التأسيس</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary btn-full">
+                        <span id="loginBtnText">Login to System</span>
+                        <div id="loginSpinner" class="spinner" style="display: none;"></div>
+                    </button>
+                </form>
+
+                <div id="errorMessage" class="message-box error" style="display: none;"></div>
+
+                <div class="login-footer">
+                    <p>Demo: admin / admin123 / Administrator</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Section -->
+    <div id="dashboardSection" class="dashboard-container" style="display: none;">
+        <!-- Modern Navbar with Logo -->
+        <nav class="navbar">
+            <div class="nav-brand">
+                <div class="nav-logo">🏫</div>
+                <div class="brand-text-arabic">مركز دار السعادة</div>
+                <div class="brand-subtitle">School Management System</div>
+            </div>
+            <div class="nav-user">
+                <div class="user-info">
+                    <div class="user-avatar">👤</div>
+                    <div class="user-details">
+                        <div class="user-name" id="userName">-</div>
+                        <span class="role-badge" id="userRole">-</span>
+                    </div>
+                </div>
+                <button id="logoutBtn" class="btn-logout">👤 Logout</button>
+            </div>
+        </nav>
+
+        <div class="main-wrapper">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <h3>MAIN MENU</h3>
+                </div>
+                <ul class="menu">
+                    <li class="menu-item active" data-section="home">
+                        <span class="menu-icon">🏠</span>
+                        <span class="menu-text">Dashboard</span>
+                    </li>
+                    <li class="menu-item" data-section="staff" id="staffMenu">
+                        <span class="menu-icon">👥</span>
+                        <span class="menu-text">Staff & Payroll</span>
+                    </li>
+                    <li class="menu-item" data-section="registration" id="registrationMenu">
+                        <span class="menu-icon">📝</span>
+                        <span class="menu-text">Registration</span>
+                    </li>
+                    <li class="menu-item" data-section="students" id="studentsMenu">
+                        <span class="menu-icon">🎓</span>
+                        <span class="menu-text">Students</span>
+                    </li>
+                    <li class="menu-item" data-section="graduated" id="graduatedMenu">
+                        <span class="menu-icon">🏆</span>
+                        <span class="menu-text">Graduated</span>
+                    </li>
+                    <li class="menu-item" data-section="attendance" id="attendanceMenu">
+                        <span class="menu-icon">✅</span>
+                        <span class="menu-text">Attendance</span>
+                    </li>
+                    <li class="menu-item" data-section="finance" id="financeMenu">
+                        <span class="menu-icon">💰</span>
+                        <span class="menu-text">Finance</span>
+                    </li>
+                    <li class="menu-item" data-section="archives" id="archivesMenu">
+                        <span class="menu-icon">📁</span>
+                        <span class="menu-text">Archives</span>
+                    </li>
+                    <li class="menu-item" data-section="reports" id="reportsMenu">
+                        <span class="menu-icon">📊</span>
+                        <span class="menu-text">Reports</span>
+                    </li>
+                    <li class="menu-item" data-section="about" id="aboutMenu">
+                        <span class="menu-icon">ℹ️</span>
+                        <span class="menu-text">About</span>
+                    </li>
+                    <li class="menu-item" data-section="settings" id="settingsMenu">
+                        <span class="menu-icon">⚙️</span>
+                        <span class="menu-text">Settings</span>
+                    </li>
+                </ul>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="content">
+                <div class="section-header">
+                    <h1 id="dashboardWelcome">Welcome back!</h1>
+                    <div class="current-date" id="currentDate"></div>
+                </div>
+
+                <!-- Home/Dashboard Section -->
+                <div id="homeSection" class="section active">
+                    <h2>Dashboard Overview</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card stat-primary">
+                            <div class="stat-icon-wrapper">🎓</div>
+                            <div class="stat-info">
+                                <h3 id="totalStudents">0</h3>
+                                <p>Total Students</p>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-success">
+                            <div class="stat-icon-wrapper">✅</div>
+                            <div class="stat-info">
+                                <h3 id="todayAttendance">0</h3>
+                                <p>Present Today</p>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-info finance-only">
+                            <div class="stat-icon-wrapper">💵</div>
+                            <div class="stat-info">
+                                <h3 id="totalRequirements">$0</h3>
+                                <p>Total Requirements</p>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-success finance-only">
+                            <div class="stat-icon-wrapper">📥</div>
+                            <div class="stat-info">
+                                <h3 id="totalCollected">$0</h3>
+                                <p>Total Collected</p>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-warning finance-only">
+                            <div class="stat-icon-wrapper">⚠️</div>
+                            <div class="stat-info">
+                                <h3 id="pendingFees">$0</h3>
+                                <p>Pending Fees</p>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-danger">
+                            <div class="stat-icon-wrapper">🏆</div>
+                            <div class="stat-info">
+                                <h3 id="totalGraduated">0</h3>
+                                <p>Graduated Students</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="charts-row">
+                        <div class="card">
+                            <h3>📈 Weekly Attendance</h3>
+                            <div class="chart-container">
+                                <canvas id="attendanceChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="card finance-only">
+                            <h3>💰 Monthly Finance</h3>
+                            <div class="chart-container">
+                                <canvas id="financeChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Staff Section -->
+                <div id="staffSection" class="section">
+                    <div class="section-header">
+                        <h1>Staff & Payroll Management</h1>
+                    </div>
+                    <div class="card">
+                        <h3>Add New Staff</h3>
+                        <form id="staffForm">
+                            <input type="hidden" id="staffId">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Full Name *</label>
+                                    <input type="text" id="staffName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Username *</label>
+                                    <input type="text" id="staffUsername" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Password *</label>
+                                    <input type="password" id="staffPassword" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Role *</label>
+                                    <select id="staffRole" required>
+                                        <option value="">Select Role...</option>
+                                        <option value="manager">Administrator</option>
+                                        <option value="finance">المحاسب</option>
+                                        <option value="teacher_class_omar">معلم - فصل عمر</option>
+                                        <option value="teacher_class_abubakar">معلم - فصل ابوبكر</option>
+                                        <option value="teacher_class_khadija">معلم - فصل خديجة</option>
+                                        <option value="teacher_class_hijaa1">معلم - فصل الهجاء الأول</option>
+                                        <option value="teacher_class_hijaa2">معلم - فصل الهجاء الثاني</option>
+                                        <option value="teacher_class_tasis">معلم - فصل التأسيس</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Monthly Salary ($)</label>
+                                    <input type="number" id="staffSalary" value="0">
+                                </div>
+                                <div class="form-group">
+                                    <label>Phone Number</label>
+                                    <input type="tel" id="staffPhone">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>🔐 User Permissions (Tick to allow access)</label>
+                                <div class="permissions-grid">
+                                    <label class="perm-checkbox">
+                                        <input type="checkbox" id="perm_students" checked>
+                                        <span>🎓 View/Edit Students</span>
+                                    </label>
+                                    <label class="perm-checkbox">
+                                        <input type="checkbox" id="perm_finance">
+                                        <span>💰 Manage Finance</span>
+                                    </label>
+                                    <label class="perm-checkbox">
+                                        <input type="checkbox" id="perm_attendance">
+                                        <span>✅ Manage Attendance</span>
+                                    </label>
+                                    <label class="perm-checkbox">
+                                        <input type="checkbox" id="perm_reports">
+                                        <span>📊 View Reports</span>
+                                    </label>
+                                    <label class="perm-checkbox">
+                                        <input type="checkbox" id="perm_graduated">
+                                        <span>🏆 Manage Graduated</span>
+                                    </label>
+                                    <label class="perm-checkbox">
+                                        <input type="checkbox" id="perm_settings">
+                                        <span>⚙️ System Settings</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary" id="staffSubmitBtn">Save Staff</button>
+                                <button type="button" class="btn-secondary" onclick="cancelStaffEdit()">Cancel</button>
+                            </div>
+                            <div id="staffMessage" class="message-box"></div>
+                        </form>
+                    </div>
+                    <div class="card">
+                        <h3>System Users</h3>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Username</th>
+                                        <th>Role</th>
+                                        <th>Permissions</th>
+                                        <th>Salary</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="staffTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Registration Section -->
+                <div id="registrationSection" class="section">
+                    <div class="section-header">
+                        <h1>Student Registration</h1>
+                    </div>
+                    
+                    <!-- Excel Upload -->
+                    <div class="card upload-card">
+                        <h3>📤 Bulk Upload Students via Excel</h3>
+                        <p>Upload an Excel file (.xlsx, .xls) to register multiple students at once. Ensure columns match the template.</p>
+                        <div class="upload-actions">
+                            <button class="btn-secondary template-btn" onclick="downloadExcelTemplate()">📥 Download Excel Template</button>
+                            <label class="btn-primary upload-btn-label">
+                                📂 Choose Excel File
+                                <input type="file" id="excelFile" accept=".xlsx,.xls" style="display: none;" onchange="handleExcelUpload(event)">
+                            </label>
+                        </div>
+                        <div id="uploadStatus" class="message-box"></div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Register New Student Manually</h3>
+                        <form id="registrationForm">
+                            <input type="hidden" id="studentId">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Student Name *</label>
+                                    <input type="text" id="studentName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Age *</label>
+                                    <input type="number" id="studentAge" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Gender *</label>
+                                    <select id="studentGender" required>
+                                        <option value="">Select...</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Class *</label>
+                                    <select id="studentClass" required>
+                                        <option value="">Select Class...</option>
+                                        <option value="فصل عمر">فصل عمر</option>
+                                        <option value="فصل ابوبكر">فصل ابوبكر</option>
+                                        <option value="فصل خديجة">فصل خديجة</option>
+                                        <option value="فصل الهجاء الأول">فصل الهجاء الأول</option>
+                                        <option value="فصل الهجاء الثاني">فصل الهجاء الثاني</option>
+                                        <option value="فصل التأسيس">فصل التأسيس</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Shift / Session *</label>
+                                    <select id="studentShift" required>
+                                        <option value="">Select Session...</option>
+                                        <option value="Early Morning">Early Morning (5:30 AM - 9:00 AM)</option>
+                                        <option value="Morning">Morning (9:00 AM - 1:00 PM)</option>
+                                        <option value="Afternoon">Afternoon (1:00 PM - 5:00 PM)</option>
+                                        <option value="Full Time">Full Time (All Day)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Student Type *</label>
+                                    <select id="studentType" required onchange="toggleFeeField()">
+                                        <option value="Regular">Regular (Paying)</option>
+                                        <option value="Scholarship">Scholarship (Free)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Monthly Fee ($) *</label>
+                                    <input type="number" id="studentFee" value="0" step="0.01">
+                                </div>
+                                <div class="form-group">
+                                    <label>Guardian Name *</label>
+                                    <input type="text" id="guardianName" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Guardian Phone *</label>
+                                    <input type="tel" id="guardianPhone" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Enrollment Date *</label>
+                                    <input type="date" id="enrollmentDate" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Address</label>
+                                <textarea id="studentAddress" rows="2"></textarea>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary" id="regSubmitBtn">Register Student</button>
+                                <button type="button" class="btn-secondary" onclick="cancelStudentEdit()">Cancel</button>
+                            </div>
+                            <div id="regMessage" class="message-box"></div>
+                        </form>
+                    </div>
+
+                    <div class="card">
+                        <h3>Students List</h3>
+                        <div class="search-box">
+                            <input type="text" id="searchStudents" placeholder="Search by name or phone...">
+                            <select id="filterClass">
+                                <option value="">All Classes</option>
+                                <option value="فصل عمر">فصل عمر</option>
+                                <option value="فصل ابوبكر">فصل ابوبكر</option>
+                                <option value="فصل خديجة">فصل خديجة</option>
+                                <option value="فصل الهجاء الأول">فصل الهجاء الأول</option>
+                                <option value="فصل الهجاء الثاني">فصل الهجاء الثاني</option>
+                                <option value="فصل التأسيس">فصل التأسيس</option>
+                            </select>
+                            <select id="filterFinancialStatus" class="finance-only">
+                                <option value="">All Status</option>
+                                <option value="paid">Paid</option>
+                                <option value="pending">Pending</option>
+                                <option value="unpaid">Unpaid</option>
+                                <option value="free">Free/Scholarship</option>
+                            </select>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Class</th>
+                                        <th>Shift</th>
+                                        <th>Guardian</th>
+                                        <th>Phone</th>
+                                        <th class="finance-only">Fee Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentsTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Graduated Section -->
+                <div id="graduatedSection" class="section">
+                    <div class="section-header">
+                        <h1>Graduated Students</h1>
+                    </div>
+                    <div class="card">
+                        <h3>Mark Student as Graduated</h3>
+                        <div class="search-box">
+                            <select id="gradFilterClass">
+                                <option value="">All Classes</option>
+                                <option value="فصل عمر">فصل عمر</option>
+                                <option value="فصل ابوبكر">فصل ابوبكر</option>
+                                <option value="فصل خديجة">فصل خديجة</option>
+                                <option value="فصل الهجاء الأول">فصل الهجاء الأول</option>
+                                <option value="فصل الهجاء الثاني">فصل الهجاء الثاني</option>
+                                <option value="فصل التأسيس">فصل التأسيس</option>
+                            </select>
+                            <input type="text" id="gradSearchStudent" placeholder="Search student..." oninput="searchGradStudent()">
+                        </div>
+                        <div id="selectedGradStudent" class="student-info-card" style="display: none;">
+                            <div class="info-row">
+                                <span>Student Name:</span>
+                                <strong id="gradStudentName"></strong>
+                            </div>
+                            <div class="info-row">
+                                <span>Class:</span>
+                                <span id="gradStudentClass"></span>
+                            </div>
+                            <div class="info-row">
+                                <span>Enrollment Date:</span>
+                                <span id="gradEnrollmentDate"></span>
+                            </div>
+                        </div>
+                        <form id="graduationForm" style="display: none; margin-top: 20px;">
+                            <input type="hidden" id="gradStudentId">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Graduation Date *</label>
+                                    <input type="date" id="graduationDate" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Graduation Level *</label>
+                                    <select id="graduationLevel" required>
+                                        <option value="">Select Level...</option>
+                                        <option value="Quran Memorization">Quran Memorization</option>
+                                        <option value="Tajweed">Tajweed</option>
+                                        <option value="Islamic Studies">Islamic Studies</option>
+                                        <option value="Complete Program">Complete Program</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Notes / Remarks</label>
+                                <textarea id="graduationNotes" rows="2"></textarea>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary">🏆 Mark as Graduated</button>
+                                <button type="button" class="btn-secondary" onclick="cancelGraduation()">Cancel</button>
+                            </div>
+                            <div id="gradMessage" class="message-box"></div>
+                        </form>
+                    </div>
+                    <div class="card">
+                        <h3>Graduated Students List</h3>
+                        <div id="noGraduatedMessage" class="no-data">No graduated students yet</div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Class</th>
+                                        <th>Graduation Date</th>
+                                        <th>Level</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="graduatedTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attendance Section -->
+                <div id="attendanceSection" class="section">
+                    <div class="section-header">
+                        <h1>Daily Attendance</h1>
+                    </div>
+                    <div class="card">
+                        <div class="date-selector">
+                            <div class="form-group">
+                                <label>Date</label>
+                                <input type="date" id="attendanceDate">
+                            </div>
+                            <div class="form-group">
+                                <label>Class</label>
+                                <select id="attendanceClass">
+                                    <option value="">Select Class...</option>
+                                    <option value="فصل عمر">فصل عمر</option>
+                                    <option value="فصل ابوبكر">فصل ابوبكر</option>
+                                    <option value="فصل خديجة">فصل خديجة</option>
+                                    <option value="فصل الهجاء الأول">فصل الهجاء الأول</option>
+                                    <option value="فصل الهجاء الثاني">فصل الهجاء الثاني</option>
+                                    <option value="فصل التأسيس">فصل التأسيس</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Shift / Session</label>
+                                <select id="attendanceShift">
+                                    <option value="Early Morning">Early Morning (5:30 AM - 9:00 AM)</option>
+                                    <option value="Morning">Morning (9:00 AM - 1:00 PM)</option>
+                                    <option value="Afternoon">Afternoon (1:00 PM - 5:00 PM)</option>
+                                    <option value="Full Time">Full Time (All Day)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Start Time</label>
+                                <input type="time" id="attStartTime" value="09:00">
+                            </div>
+                            <div class="form-group">
+                                <label>End Time</label>
+                                <input type="time" id="attEndTime" value="17:00">
+                            </div>
+                            <button type="button" class="btn-primary" id="loadAttendanceBtn" style="align-self: flex-end;">Load Students</button>
+                        </div>
+                    </div>
+                    <div id="attendanceCard" class="card" style="display: none;">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Student Name</th>
+                                        <th>Class</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="attendanceTableBody"></tbody>
+                            </table>
+                        </div>
+                        <div class="form-actions" id="saveAttendanceActions" style="display: none; margin-top: 20px;">
+                            <button type="button" class="btn-primary" id="saveAttendanceBtn">💾 Save Attendance</button>
+                        </div>
+                        <div id="attMessage" class="message-box"></div>
+                    </div>
+                </div>
+
+                <!-- Finance Section -->
+                <div id="financeSection" class="section finance-only">
+                    <div class="section-header">
+                        <h1>Finance Management</h1>
+                    </div>
+                    <div class="card">
+                        <h3>Record New Payment</h3>
+                        <div class="search-box">
+                            <select id="financeFilterClass">
+                                <option value="">All Classes</option>
+                                <option value="فصل عمر">فصل عمر</option>
+                                <option value="فصل ابوبكر">فصل ابوبكر</option>
+                                <option value="فصل خديجة">فصل خديجة</option>
+                                <option value="فصل الهجاء الأول">فصل الهجاء الأول</option>
+                                <option value="فصل الهجاء الثاني">فصل الهجاء الثاني</option>
+                                <option value="فصل التأسيس">فصل التأسيس</option>
+                            </select>
+                            <input type="text" id="financeSearchStudent" placeholder="Search student..." oninput="searchStudentForPayment()">
+                        </div>
+                        <div id="financeSummaryBoxes" class="finance-summary-grid" style="display: none;">
+                            <div class="summary-box box-required">
+                                <span class="box-label">Required Fee</span>
+                                <strong class="box-value" id="finReqDisplay">$0.00</strong>
+                            </div>
+                            <div class="summary-box box-paid">
+                                <span class="box-label">Total Paid</span>
+                                <strong class="box-value" id="finPaidDisplay">$0.00</strong>
+                            </div>
+                            <div class="summary-box box-balance">
+                                <span class="box-label">Remaining Balance</span>
+                                <strong class="box-value" id="finBalDisplay">$0.00</strong>
+                            </div>
+                        </div>
+                        <form id="paymentForm" style="display: none; margin-top: 20px;">
+                            <input type="hidden" id="paymentId">
+                            <input type="hidden" id="paymentStudentId">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Amount ($) *</label>
+                                    <input type="number" id="paymentAmount" step="0.01" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Method *</label>
+                                    <select id="paymentMethod" required>
+                                        <option value="">Select...</option>
+                                        <option value="Cash">Cash</option>
+                                        <option value="Bank">Bank</option>
+                                        <option value="E-Dahab">E-Dahab</option>
+                                        <option value="Zaad">Zaad</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Month *</label>
+                                    <select id="paymentMonth" required>
+                                        <option value="">Select Month...</option>
+                                        <option value="January">January</option>
+                                        <option value="February">February</option>
+                                        <option value="March">March</option>
+                                        <option value="April">April</option>
+                                        <option value="May">May</option>
+                                        <option value="June">June</option>
+                                        <option value="July">July</option>
+                                        <option value="August">August</option>
+                                        <option value="September">September</option>
+                                        <option value="October">October</option>
+                                        <option value="November">November</option>
+                                        <option value="December">December</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary" id="paySubmitBtn">Record Payment</button>
+                                <button type="button" class="btn-secondary" onclick="cancelPaymentEdit()">Cancel</button>
+                            </div>
+                            <div id="payMessage" class="message-box"></div>
+                        </form>
+                    </div>
+                    <div class="card">
+                        <h3>Payment History</h3>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Student</th>
+                                        <th>Class</th>
+                                        <th>Month</th>
+                                        <th>Amount</th>
+                                        <th>Method</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="paymentsTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- NEW: Expenses Section -->
+                    <div class="card">
+                        <h3>📝 Record Expenses</h3>
+                        <form id="expenseForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Expense Category *</label>
+                                    <select id="expenseCategory" required>
+                                        <option value="">Select Category...</option>
+                                        <option value="Teacher Salary">Teacher Salary</option>
+                                        <option value="Utilities">Utilities (Water/Electricity)</option>
+                                        <option value="Supplies">School Supplies</option>
+                                        <option value="Rent">Rent</option>
+                                        <option value="Maintenance">Maintenance</option>
+                                        <option value="Transport">Transport</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Amount ($) *</label>
+                                    <input type="number" id="expenseAmount" step="0.01" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Month *</label>
+                                    <select id="expenseMonth" required>
+                                        <option value="">Select Month...</option>
+                                        <option value="January">January</option>
+                                        <option value="February">February</option>
+                                        <option value="March">March</option>
+                                        <option value="April">April</option>
+                                        <option value="May">May</option>
+                                        <option value="June">June</option>
+                                        <option value="July">July</option>
+                                        <option value="August">August</option>
+                                        <option value="September">September</option>
+                                        <option value="October">October</option>
+                                        <option value="November">November</option>
+                                        <option value="December">December</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Description</label>
+                                    <input type="text" id="expenseDescription" placeholder="Brief description">
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary">💾 Save Expense</button>
+                            </div>
+                            <div id="expenseMessage" class="message-box"></div>
+                        </form>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Expenses History</h3>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Category</th>
+                                        <th>Description</th>
+                                        <th>Month</th>
+                                        <th>Amount</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="expensesTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Archives Section -->
+                <div id="archivesSection" class="section">
+                    <div class="section-header">
+                        <h1>Monthly Archives</h1>
+                    </div>
+                    <div class="card">
+                        <h3>Create Monthly Archive</h3>
+                        <p>Archive all data at the end of the month. This will save all students, payments, attendance, and expenses for the selected month.</p>
+                        <form id="archiveForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Archive Name *</label>
+                                    <input type="text" id="archiveName" placeholder="e.g., January 2025 Archive" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Month *</label>
+                                    <select id="archiveMonth" required>
+                                        <option value="">Select Month...</option>
+                                        <option value="January">January</option>
+                                        <option value="February">February</option>
+                                        <option value="March">March</option>
+                                        <option value="April">April</option>
+                                        <option value="May">May</option>
+                                        <option value="June">June</option>
+                                        <option value="July">July</option>
+                                        <option value="August">August</option>
+                                        <option value="September">September</option>
+                                        <option value="October">October</option>
+                                        <option value="November">November</option>
+                                        <option value="December">December</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Year *</label>
+                                <input type="number" id="archiveYear" value="2025" required>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary">📁 Create Archive</button>
+                            </div>
+                            <div id="archiveMessage" class="message-box"></div>
+                        </form>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Saved Archives</h3>
+                        <div id="noArchivesMessage" class="no-data">No archives yet</div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Archive Name</th>
+                                        <th>Month</th>
+                                        <th>Year</th>
+                                        <th>Created Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="archivesTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reports Section -->
+                <div id="reportsSection" class="section">
+                    <div class="section-header">
+                        <h1>Detailed Reports</h1>
+                    </div>
+                    <div class="card">
+                        <h3>Generate Report</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Report Type</label>
+                                <select id="reportType">
+                                    <option value="attendance">Attendance Report</option>
+                                    <option value="finance">Finance Report</option>
+                                    <option value="students">Students List</option>
+                                    <option value="graduated">Graduated Students</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Class</label>
+                                <select id="reportClass">
+                                    <option value="">All Classes</option>
+                                    <option value="فصل عمر">فصل عمر</option>
+                                    <option value="فصل ابوبكر">فصل ابوبكر</option>
+                                    <option value="فصل خديجة">فصل خديجة</option>
+                                    <option value="فصل الهجاء الأول">فصل الهجاء الأول</option>
+                                    <option value="فصل الهجاء الثاني">فصل الهجاء الثاني</option>
+                                    <option value="فصل التأسيس">فصل التأسيس</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Month</label>
+                                <select id="reportMonth">
+                                    <option value="">All Months</option>
+                                    <option value="January">January</option>
+                                    <option value="February">February</option>
+                                    <option value="March">March</option>
+                                    <option value="April">April</option>
+                                    <option value="May">May</option>
+                                    <option value="June">June</option>
+                                    <option value="July">July</option>
+                                    <option value="August">August</option>
+                                    <option value="September">September</option>
+                                    <option value="October">October</option>
+                                    <option value="November">November</option>
+                                    <option value="December">December</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn-primary" onclick="generateReport()">Generate Report</button>
+                            <button type="button" class="btn-secondary" onclick="exportReportCSV()">Download CSV</button>
+                            <button type="button" class="btn-secondary" onclick="window.print()">🖨️ Print PDF</button>
+                        </div>
+                        <div id="reportContent" class="card" style="display: none; margin-top: 20px;"></div>
+                    </div>
+                </div>
+
+                <!-- About Section -->
+                <div id="aboutSection" class="section">
+                    <div class="card about-card">
+                        <div class="about-header">
+                            <div class="logo-placeholder" style="margin: 0 auto 20px; display: flex;">🏫</div>
+                            <h2 class="school-name-arabic">مركز دار السعادة</h2>
+                            <p class="school-name-english">MARKAZ DAARU SACAADA</p>
+                            <p class="school-subtitle">School Management System</p>
+                        </div>
+                        <div class="about-content">
+                            <h3>System Overview</h3>
+                            <p>This comprehensive School Management System is designed specifically for مركز دار السعادة (Markaz Daaru Sacaada) to streamline administrative tasks, student management, attendance tracking, and financial operations.</p>
+                            
+                            <h3>Key Features</h3>
+                            <ul>
+                                <li>📚 <strong>Student Management:</strong> Complete student registration with Excel bulk upload capability</li>
+                                <li>✅ <strong>Smart Attendance:</strong> 4-shift system (Early Morning, Morning, Afternoon, Full Time) with auto-lock</li>
+                                <li>💰 <strong>Financial Management:</strong> Track payments, expenses, and generate detailed financial reports</li>
+                                <li> <strong>Reports & Analytics:</strong> Generate comprehensive reports for attendance, finance, and student data</li>
+                                <li>📁 <strong>Monthly Archives:</strong> Archive and preserve monthly data for future reference</li>
+                                <li>🏆 <strong>Graduation Tracking:</strong> Monitor and record student graduations</li>
+                                <li>👥 <strong>Staff Management:</strong> Manage staff accounts with role-based permissions</li>
+                            </ul>
+                            
+                            <h3>Classes Available</h3>
+                            <div class="classes-grid">
+                                <div class="class-item">📚 فصل عمر</div>
+                                <div class="class-item">📚 فصل ابوبكر</div>
+                                <div class="class-item">📚 فصل خديجة</div>
+                                <div class="class-item">📚 فصل الهجاء الأول</div>
+                                <div class="class-item">📚 فصل الهجاء الثاني</div>
+                                <div class="class-item">📚 فصل التأسيس</div>
+                            </div>
+                            
+                            <h3>System Information</h3>
+                            <p><strong>Version:</strong> 2.0 | <strong>Developed:</strong> 2025 | <strong>Database:</strong> Firebase Realtime Database</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Section -->
+                <div id="settingsSection" class="section">
+                    <div class="card">
+                        <h3>System Settings</h3>
+                        <form id="settingsForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>School Name</label>
+                                    <input type="text" id="settingSchoolName" value="مركز دار السعادة">
+                                </div>
+                                <div class="form-group">
+                                    <label>Default Monthly Fee ($)</label>
+                                    <input type="number" id="settingMonthlyFee" value="0" step="0.01">
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary">Save Settings</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card">
+                        <h3>Appearance & Data</h3>
+                        <div class="settings-actions">
+                            <button type="button" class="btn-secondary" onclick="toggleDarkMode()">🌙 Toggle Dark/Light Mode</button>
+                            <button type="button" class="btn-secondary" onclick="exportAllData()">📥 Backup Data (JSON)</button>
+                            <label class="btn-secondary" style="cursor: pointer;">
+                                📤 Restore Data
+                                <input type="file" accept=".json" style="display: none;" onchange="importAllData(event)">
+                            </label>
+                            <button type="button" class="btn-danger" onclick="clearAllData()">🗑️ Clear All Data</button>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
