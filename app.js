@@ -1,16 +1,25 @@
-// Firebase Configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyCh4xfuPwFf-b8apo2wCgr_KKg4Vms1CgA",
-    authDomain: "daru-al-sacaada.firebaseapp.com",
-    projectId: "daru-al-sacaada",
-    storageBucket: "daru-al-sacaada.firebasestorage.app",
-    messagingSenderId: "657609777903",
-    appId: "1:657609777903:web:f60939115d48fb5331311a",
-    measurementId: "G-N73LNF62LD"
-};
-const app = firebase.initializeApp(firebaseConfig);
-const analytics = firebase.analytics();
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCh4xfuPwFf-b8apo2wCGr_KKg4Vms1CgA",
+  authDomain: "daru-al-sacaada.firebaseapp.com",
+  databaseURL: "https://daru-al-sacaada-default-rtdb.firebaseio.com",
+  projectId: "daru-al-sacaada",
+  storageBucket: "daru-al-sacaada.firebasestorage.app",
+  messagingSenderId: "657609777903",
+  appId: "1:657609777903:web:f60939115d48fb5331311a",
+  measurementId: "G-N73LNF62LD"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 // ==================== GLOBAL STATE ====================
 let currentUser = null;
 let allStudents = [];
