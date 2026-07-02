@@ -13,10 +13,13 @@ const firebaseConfig = {
   projectId: "daru-al-sacaada",
   storageBucket: "daru-al-sacaada.firebasestorage.app",
   messagingSenderId: "657609777903",
-  appId: "1:657609777903:web:f60939115d48fb5331311a",
-  measurementId: "G-N73LNF62LD"
+  appId: "1:657609777903:web:eaf2ce854f8293bc31311a",
+  measurementId: "G-STY68ND2RL"
 };
 
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
